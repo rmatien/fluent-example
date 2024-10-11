@@ -1,0 +1,68 @@
+﻿@page "/calendar"
+@rendermode InteractiveServer
+@inject IJSRuntime JS
+
+<h3>Calendar</h3>
+
+<div id="calendar"></div>
+
+<div id="fullcalendar" style="max-height: 600px"></div>
+
+@code {
+    private List<Kalender> kalenders = new()
+    {
+        new Kalender { id="cal1", name = "Personal", backgroundColor = "#03bd9e"},
+        new Kalender { id="cal2", name = "Work", backgroundColor = "#00a9ff"}
+    };
+
+    private List<Event> events = new()
+    {
+        new Event { id="event1", title = "Pengantar Bisnis 1", start = "2024-10-10 09:00:00", end = "2024-10-10 10:30:00", resourceId="1", description = "Pengantar Bisnis 1"},
+        new Event { id="event3", title = "Pengantar Bisnis 1", start = "2024-10-09 09:00:00", end = "2024-10-09 10:30:00", resourceId="1", description = "Pengantar Bisnis 1"},
+        new Event { id="event2", title = "Pendidikan Agama Islam", start = "2024-10-10 11:00:00", end = "2024-10-10 12:30:00", resourceId="2", description= "Pendidikan Agama Islam"},
+        new Event { id="event4", title = "Pendidikan Agama Islam", start = "2024-10-09 11:00:00", end = "2024-10-09 12:30:00", resourceId="2", description= "Pendidikan Agama Islam"}
+    };
+
+    private List<Resource> resources = new()
+    {
+        new Resource { id="1", title="Ruang A", gedung="Gedung Aula"},
+        new Resource { id="2", title="Ruang B", gedung="Riset Hub"}
+    };
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // await JS.InvokeVoidAsync("initializeCalendar", events);
+            // await JS.InvokeVoidAsync("InitJSCalendar", "fullcalendar", events);
+            await JS.InvokeVoidAsync("InitResourceTimeline", "fullcalendar", events, resources);
+        }
+    }
+
+    private class Kalender()
+    {
+        public string? id { get; set; }
+        public string? name { get; set; }
+        public string? backgroundColor { get; set; }
+    }
+
+    private class Event()
+    {
+        public string? id { get; set; }
+        public string? title { get; set; }
+        public string? start { get; set; }
+        public string? end { get; set; }
+        public string? allday { get; set; }
+        public string? resourceId { get; set; }
+        //custom properties
+        public string? description { get; set; }
+    }
+
+    private class Resource()
+    {
+        public string? id { get; set; }
+        public string? title { get; set; }
+        //custom properties
+        public string? gedung { get; set; }
+    }
+}

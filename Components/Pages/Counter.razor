@@ -1,0 +1,132 @@
+﻿@page "/counter"
+@using FluentExample.Helpers
+@rendermode InteractiveServer
+@inject IDialogService DialogService
+@inject IJSRuntime JSRuntime
+
+<PageTitle>Counter</PageTitle>
+
+<h1>Counter</h1>
+
+<div role="status" style="padding-bottom: 1em;">
+    Current count: <FluentBadge Appearance="Appearance.Neutral">@currentCount</FluentBadge>
+</div>
+
+<FluentButton Appearance="Appearance.Accent" @onclick="IncrementCount">Click me</FluentButton>
+<FluentButton Appearance="Appearance.Accent" @onclick="@OpenDialogAsync">Show Dialog</FluentButton>
+<FluentButton Appearance="Appearance.Accent" @onclick="@ShowDialogWithoutService">Show Dialog without DialogService</FluentButton>
+<FluentButton Appearance="Appearance.Accent" @onclick="@DownloadFileFromStream">Download</FluentButton>
+
+<FluentDialog @ref="_myFluentDialog" @bind-Hidden="@Hidden" aria-label="Simple dialog" Modal="true" TrapFocus="true" PreventScroll="true" @ondialogdismiss=OnDismiss>
+    <FluentDialogHeader Visible="true" />
+    <h2>Just a simple dialog</h2>
+    <p>The 'Close dialog' button is automatically focused.</p>
+    <p>The 'Another button' doesn't do anything other than showing it can receive focus.</p>
+    <p>The width, height and padding of the dialog are customized in (isolated) CSS</p>
+    <FluentButton Appearance="Appearance.Accent" Autofocus="true" @onclick="OnClose">Close dialog</FluentButton>
+    <FluentButton>Another button</FluentButton>
+</FluentDialog>
+
+<FluentDialogProvider />
+@code {
+    private FluentDialog? _myFluentDialog;
+    private bool Hidden { get; set; } = true;
+
+    private int currentCount = 0;
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+            _myFluentDialog!.Hide();
+    }
+
+    private void IncrementCount()
+    {
+        currentCount++;
+    }
+
+    //Code for Dialog
+    SimplePerson simplePerson = new()
+        {
+            Firstname = "Dan",
+            Lastname = "Sanderson",
+            Age = 42,
+        };
+
+    private async Task OpenDialogAsync()
+    {
+        DialogParameters parameters = new()
+            {
+                Title = $"Hello {simplePerson.Firstname}",
+                PrimaryAction = "Yes",
+                PrimaryActionEnabled = false,
+                SecondaryAction = "No",
+                Width = "500px",
+                TrapFocus = true,
+                Modal = true,
+                PreventScroll = true
+            };
+
+        IDialogReference dialog = await DialogService.ShowDialogAsync<SimpleDialog>(simplePerson, parameters);
+        DialogResult? result = await dialog.Result;
+
+        if (result.Data is not null)
+        {
+            SimplePerson? simplePerson = result.Data as SimplePerson;         
+        }
+    }
+
+
+    //Code for Dialog WithOutService
+    private void ShowDialogWithoutService()
+    {
+        _myFluentDialog!.Show();
+    }
+
+    private void OnClose()
+    {
+        _myFluentDialog!.Hide();
+    }
+
+    private void OnDismiss(DialogEventArgs args)
+    {
+        if (args is not null && args.Reason is not null && args.Reason == "dismiss")
+        {
+            _myFluentDialog!.Hide();
+        }
+    }
+
+    //Code for Generate PDF
+
+    // private async Task GeneratePDF()
+    // {
+    //     var pdfGenerator = new GeneratePDF($"https://google.com/");
+    //     var pdf = pdfGenerator.getPdf();
+    //     var pdfStream = new System.IO.MemoryStream(pdf);
+    //     // return new FileStreamResult(pdfStream, "application/pdf");
+    //     var fileName = "google.pdf";
+    //     // await JSRuntime.InvokeVoidAsync("downloadFile", fileName, Convert.ToBase64String(pdfStream));
+    //     await JSRuntime.InvokeVoidAsync("downloadFileFromStream", fileName, pdfStream);
+    // }
+
+    private Stream GetFileStream()
+    {
+        var randomBinaryData = new byte[50 * 1024];
+        var fileStream = new MemoryStream(randomBinaryData);
+
+        return fileStream;
+    }
+
+    private async Task DownloadFileFromStream()
+    {
+        var pdfGenerator = new GeneratePDF($"https://google.com/");
+        var fileStream = new System.IO.MemoryStream(pdfGenerator.getPdf());
+        
+        // var fileStream = GetFileStream();
+        var fileName = "google.pdf";
+
+        using var streamRef = new DotNetStreamReference(stream: fileStream);
+
+        await JSRuntime.InvokeVoidAsync("downloadFileFromStream", fileName, streamRef);
+    }
+}
