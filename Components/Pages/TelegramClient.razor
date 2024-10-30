@@ -1,0 +1,35 @@
+﻿@page "/telegram-client"
+@rendermode InteractiveServer
+@using FluentExample.Helpers
+@using Microsoft.Extensions.Options
+@inject IToastService ToastService
+@inject ITelegramBotService TelegramBot
+
+<FluentCard Width="340px" Height="360px" MinimalStyle="true">
+    <div style="margin-bottom: 40px">
+        <FluentLabel Typo="Typography.Header">Telegram Client</FluentLabel>
+    </div>
+        <FluentStack Orientation="Orientation.Vertical">
+            <div>
+                <FluentTextField Name="message" @bind-Value="@message" Label="Message" Style="width: 300px"/>
+            </div>
+        </FluentStack>
+        <FluentStack HorizontalAlignment="HorizontalAlignment.End"
+                     Style="margin-top: 40px">
+            <FluentButton Appearance="Appearance.Accent" IconStart="@(new Icons.Regular.Size16.Mail())" OnClick="SendMessage" Style="width: 100px">Send</FluentButton>
+
+        </FluentStack>
+</FluentCard>
+
+@code {
+    public string message = string.Empty;
+    
+    private async Task SendMessage()
+    {
+        if (!string.IsNullOrWhiteSpace(message)) {
+            await TelegramBot.SendMessage(TelegramBot.GetChatID(), message);
+
+            ToastService.ShowInfo("Pesan telah terkirim");
+        }
+    }
+}

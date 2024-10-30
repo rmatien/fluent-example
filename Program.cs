@@ -1,5 +1,6 @@
 using Microsoft.FluentUI.AspNetCore.Components;
 using FluentExample.Components;
+using FluentExample.Helpers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -7,6 +8,14 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 builder.Services.AddFluentUIComponents();
+
+IConfigurationSection? telegramSettings = builder.Configuration.GetSection(TelegramSettings.Key);
+builder.Services
+    .Configure<TelegramSettings>(telegramSettings)
+    .AddOptionsWithValidateOnStart<TelegramSettings>()
+    .ValidateDataAnnotations();
+
+builder.Services.AddSingleton<ITelegramBotService, TelegramBotService>();
 
 var app = builder.Build();
 

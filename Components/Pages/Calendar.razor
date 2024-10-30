@@ -1,14 +1,22 @@
 ﻿@page "/calendar"
 @rendermode InteractiveServer
 @inject IJSRuntime JS
+@inject IToastService ToastService
 
 <h3>Calendar</h3>
+<FluentToolbar Style="width: 100%">
+    <FluentDatePicker id="d1" AriaLabel="To" @bind-Value="@tanggal" Style="width: 140px"
+                      @bind-Value:after="RefreshData" DayFormat="DayFormat.TwoDigit"
+                      Culture="@(System.Globalization.CultureInfo.GetCultureInfo("id-ID"))" />
+</FluentToolbar>
 
 <div id="calendar"></div>
 
 <div id="fullcalendar" style="max-height: 600px"></div>
 
 @code {
+    private DateTime? tanggal = DateTime.Now;
+
     private List<Kalender> kalenders = new()
     {
         new Kalender { id="cal1", name = "Personal", backgroundColor = "#03bd9e"},
@@ -37,6 +45,12 @@
             // await JS.InvokeVoidAsync("InitJSCalendar", "fullcalendar", events);
             await JS.InvokeVoidAsync("InitResourceTimeline", "fullcalendar", events, resources);
         }
+    }
+
+    private async Task RefreshData()
+    {
+        await JS.InvokeVoidAsync("InitResourceTimeline", "fullcalendar", events, resources);
+        ToastService.ShowInfo($"Tanggal :{tanggal}");
     }
 
     private class Kalender()

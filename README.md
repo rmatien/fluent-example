@@ -8,3 +8,4 @@ On this project :
 - Generate Excel file using CloseXML
 - Charting with ApexCharts
 - Event Schedule using Fullcalendar
+- Send Telegram Message via Telegram Bot
